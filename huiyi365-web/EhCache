@@ -1,0 +1,103 @@
+ Ehcache是现在最流行的纯Java开源缓存框架
+2014-12-22 13:28 14998人阅读 评论(0) 收藏 举报
+ 分类：  java（236）  
+
+
+Ehcache是现在最流行的纯Java开源缓存框架，配置简单、结构清晰、功能强大，最初知道它，是从Hibernate的缓存开始的。网上中文的EhCache材料以简单介绍和配置方法居多，如果你有这方面的问题，请自行google；对于API，官网上介绍已经非常清楚，请参见官网；但是很少见到特性说明和对实现原理的分析，因此在这篇文章里面，我会详细介绍和分析EhCache的特性，加上一些自己的理解和思考，希望对缓存感兴趣的朋友有所收获。
+
+ 
+
+一、特性一览，来自官网，简单翻译一下：
+
+ 
+
+1、快速轻量
+过去几年，诸多测试表明Ehcache是最快的Java缓存之一。
+Ehcache的线程机制是为大型高并发系统设计的。
+大量性能测试用例保证Ehcache在不同版本间性能表现得一致性。
+很多用户都不知道他们正在用Ehcache，因为不需要什么特别的配置。
+API易于使用，这就很容易部署上线和运行。
+很小的jar包，Ehcache 2.2.3才668kb。
+最小的依赖：唯一的依赖就是SLF4J了。
+
+2、伸缩性
+缓存在内存和磁盘存储可以伸缩到数G，Ehcache为大数据存储做过优化。
+大内存的情况下，所有进程可以支持数百G的吞吐。
+为高并发和大型多CPU服务器做优化。
+线程安全和性能总是一对矛盾，Ehcache的线程机制设计采用了Doug Lea的想法来获得较高的性能。
+单台虚拟机上支持多缓存管理器。
+通过Terracotta服务器矩阵，可以伸缩到数百个节点。
+
+3、灵活性
+Ehcache 1.2具备对象API接口和可序列化API接口。
+不能序列化的对象可以使用除磁盘存储外Ehcache的所有功能。
+除了元素的返回方法以外，API都是统一的。只有这两个方法不一致：getObjectValue和getKeyValue。这就使得缓存对象、序列化对象来获取新的特性这个过程很简单。
+支持基于Cache和基于Element的过期策略，每个Cache的存活时间都是可以设置和控制的。
+提供了LRU、LFU和FIFO缓存淘汰算法，Ehcache 1.2引入了最少使用和先进先出缓存淘汰算法，构成了完整的缓存淘汰算法。
+提供内存和磁盘存储，Ehcache和大多数缓存解决方案一样，提供高性能的内存和磁盘存储。
+动态、运行时缓存配置，存活时间、空闲时间、内存和磁盘存放缓存的最大数目都是可以在运行时修改的。
+
+4、标准支持
+Ehcache提供了对JSR107 JCACHE API最完整的实现。因为JCACHE在发布以前，Ehcache的实现（如net.sf.jsr107cache）已经发布了。
+实现JCACHE API有利于到未来其他缓存解决方案的可移植性。
+Ehcache的维护者Greg Luck，正是JSR107的专家委员会委员。
+
+5、可扩展性
+监听器可以插件化。Ehcache 1.2提供了CacheManagerEventListener和CacheEventListener接口，实现可以插件化，并且可以在ehcache.xml里配置。
+节点发现，冗余器和监听器都可以插件化。
+分布式缓存，从Ehcache 1.2开始引入，包含了一些权衡的选项。Ehcache的团队相信没有什么是万能的配置。
+实现者可以使用内建的机制或者完全自己实现，因为有完整的插件开发指南。
+缓存的可扩展性可以插件化。创建你自己的缓存扩展，它可以持有一个缓存的引用，并且绑定在缓存的生命周期内。
+缓存加载器可以插件化。创建你自己的缓存加载器，可以使用一些异步方法来加载数据到缓存里面。
+缓存异常处理器可以插件化。创建一个异常处理器，在异常发生的时候，可以执行某些特定操作。
+
+6、应用持久化
+在VM重启后，持久化到磁盘的存储可以复原数据。
+Ehcache是第一个引入缓存数据持久化存储的开源Java缓存框架。缓存的数据可以在机器重启后从磁盘上重新获得。
+根据需要将缓存刷到磁盘。将缓存条目刷到磁盘的操作可以通过cache.flush()方法来执行，这大大方便了Ehcache的使用。
+
+7、监听器
+缓存管理器监听器。允许注册实现了CacheManagerEventListener接口的监听器：
+notifyCacheAdded()
+notifyCacheRemoved()
+缓存事件监听器。允许注册实现了CacheEventListener接口的监听器，它提供了许多对缓存事件发生后的处理机制：
+notifyElementRemoved/Put/Updated/Expired 
+
+8、开启JMX
+Ehcache的JMX功能是默认开启的，你可以监控和管理如下的MBean：
+CacheManager、Cache、CacheConfiguration、CacheStatistics 
+
+9、分布式缓存
+从Ehcache 1.2开始，支持高性能的分布式缓存，兼具灵活性和扩展性。
+分布式缓存的选项包括：
+通过Terracotta的缓存集群：设定和使用Terracotta模式的Ehcache缓存。缓存发现是自动完成的，并且有很多选项可以用来调试缓存行为和性能。
+使用RMI、JGroups或者JMS来冗余缓存数据：节点可以通过多播或发现者手动配置。状态更新可以通过RMI连接来异步或者同步完成。
+Custom：一个综合的插件机制，支持发现和复制的能力。
+可用的缓存复制选项。支持的通过RMI、JGroups或JMS进行的异步或同步的缓存复制。
+可靠的分发：使用TCP的内建分发机制。
+节点发现：节点可以手动配置或者使用多播自动发现，并且可以自动添加和移除节点。对于多播阻塞的情况下，手动配置可以很好地控制。
+分布式缓存可以任意时间加入或者离开集群。缓存可以配置在初始化的时候执行引导程序员。
+BootstrapCacheLoaderFactory抽象工厂，实现了BootstrapCacheLoader接口（RMI实现）。
+缓存服务端。Ehcache提供了一个Cache Server，一个war包，为绝大多数web容器或者是独立的服务器提供支持。
+缓存服务端有两组API：面向资源的RESTful，还有就是SOAP。客户端没有实现语言的限制。
+RESTful缓存服务器：Ehcached的实现严格遵循RESTful面向资源的架构风格。
+SOAP缓存服务端：Ehcache RESTFul Web Services API暴露了单例的CacheManager，他能在ehcache.xml或者IoC容器里面配置。
+标准服务端包含了内嵌的Glassfish web容器。它被打成了war包，可以任意部署到支持Servlet 2.5的web容器内。Glassfish V2/3、Tomcat 6和Jetty 6都已经经过了测试。
+
+10、搜索
+标准分布式搜索使用了流式查询接口的方式，请参阅文档。
+
+11、Java EE和应用缓存
+为普通缓存场景和模式提供高质量的实现。
+阻塞缓存：它的机制避免了复制进程并发操作的问题。
+SelfPopulatingCache在缓存一些开销昂贵操作时显得特别有用，它是一种针对读优化的缓存。它不需要调用者知道缓存元素怎样被返回，也支持在不阻塞读的情况下刷新缓存条目。
+CachingFilter：一个抽象、可扩展的cache filter。
+SimplePageCachingFilter：用于缓存基于request URI和Query String的页面。它可以根据HTTP request header的值来选择采用或者不采用gzip压缩方式将页面发到浏览器端。你可以用它来缓存整个Servlet页面，无论你采用的是JSP、velocity，或者其他的页面渲染技术。
+SimplePageFragmentCachingFilter：缓存页面片段，基于request URI和Query String。在JSP中使用jsp:include标签包含。
+已经使用Orion和Tomcat测试过，兼容Servlet 2.3、Servlet 2.4规范。
+Cacheable命令：这是一种老的命令行模式，支持异步行为、容错。
+兼容Hibernate，兼容Google App Engine。
+基于JTA的事务支持，支持事务资源管理，二阶段提交和回滚，以及本地事务。
+
+12、开源协议
+Apache 2.0 license
