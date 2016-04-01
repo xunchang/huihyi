@@ -1,6 +1,7 @@
 package com.huiyi.service.sys.impl;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -131,5 +132,47 @@ public class ResourceServiceImpl implements ResourceServiceI {
         return rv;
     }
 
+    @Override
+    public void add(ResourceView resourceView) {
+        Resource resource = new Resource();
+        resource.setCreatedatetime(new Date());
+        resource.setDescription(resourceView.getDescription());
+        resource.setIcon(resourceView.getIcon());
+        resource.setName(resourceView.getName());
+        if ((resourceView.getPid() != null) && !"".equals(resourceView.getPid())) {
+            resource.setResource(resourceDao.get(Resource.class, resourceView.getPid()));
+        }
+        resource.setResourcetype(resourceView.getResourcetype());
+        resource.setSeq(resourceView.getSeq());
+        resource.setState(resourceView.getCstate());
+        resource.setUrl(resourceView.getUrl());
+        resourceDao.save(resource);
+    }
 
+    @Override
+    public List<Tree> listAllTree(boolean flag) {
+        List<Resource> resourceList = null;
+        List<Tree> treeList = new ArrayList<Tree>();
+        if (flag) {
+            resourceList = resourceDao.find("select distinct r from Resource r left join fetch r.resource  order by r.seq");
+        } else {
+            resourceList = resourceDao.find("select distinct r from Resource r left join fetch r.resource where r.resourcetype =0 order by r.seq");
+        }
+        if ((resourceList != null) && (resourceList.size() > 0)) {
+            for (Resource resource : resourceList) {
+                Tree tree = new Tree();
+                tree.setId(resource.getId().toString());
+                if (resource.getResource() != null) {
+                    tree.setPid(resource.getResource().getId().toString());
+                }
+                tree.setText(resource.getName());
+                tree.setIconCls(resource.getIcon());
+                Map<String, Object> attr = new HashMap<String, Object>();
+                attr.put("url", resource.getUrl());
+                tree.setAttributes(attr);
+                treeList.add(tree);
+            }
+        }
+        return treeList;
+    }
 }

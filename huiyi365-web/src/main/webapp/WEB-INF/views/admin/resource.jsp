@@ -117,6 +117,7 @@
 			treeGrid.treegrid('select', id);
 		}
 		var node = treeGrid.treegrid('getSelected');
+		alert(node.id);
 		if (node) {
 			parent.$.modalDialog({
 				title : '编辑',

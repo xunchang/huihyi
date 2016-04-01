@@ -70,6 +70,7 @@ public class ResourceController extends BaseController {
         }
         return j;
     }
+    
     @RequestMapping("/editPage")
     public String editPage(HttpServletRequest request, Long id) {
         ResourceView r = resourceService.get(id);
@@ -77,11 +78,32 @@ public class ResourceController extends BaseController {
         return "/admin/resourceEdit";
     }
     
-    /*@RequestMapping("/allTree")
+    @RequestMapping("/addPage")
+    public String addPage() {
+        return "/admin/resourceAdd";
+    }
+    
+    @RequestMapping("/add")
+    @ResponseBody
+    public Json add(ResourceView resourceView) {
+        Json j = new Json();
+        try {
+            resourceService.add(resourceView);
+            j.setSuccess(true);
+            j.setMsg("添加成功！");
+        } catch (Exception e) {
+            j.setMsg(e.getMessage());
+        }
+        return j;
+    }
+    
+    @RequestMapping("/allTree")
     @ResponseBody
     public List<Tree> allTree(boolean flag) {// true获取全部资源,false只获取菜单资源
         return resourceService.listAllTree(flag);
     }
+    /*
+     * 
 
 
     @RequestMapping("/get")
@@ -92,23 +114,6 @@ public class ResourceController extends BaseController {
 
     
 
-    @RequestMapping("/addPage")
-    public String addPage() {
-        return "/admin/resourceAdd";
-    }
-
-    @RequestMapping("/add")
-    @ResponseBody
-    public Json add(Resource resource) {
-        Json j = new Json();
-        try {
-            resourceService.add(resource);
-            j.setSuccess(true);
-            j.setMsg("添加成功！");
-        } catch (Exception e) {
-            j.setMsg(e.getMessage());
-        }
-        return j;
-    }*/
+    */
 
 }

@@ -15,7 +15,8 @@ public interface BaseDaoI<T> {
     
     public void update(T o);
     public void delete(T o);
-	/*public Serializable save(T o);
+    public Serializable save(T o);
+	/*
 
 	public void saveOrUpdate(T o);
 

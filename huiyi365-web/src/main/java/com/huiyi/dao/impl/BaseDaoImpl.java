@@ -80,15 +80,15 @@ public class BaseDaoImpl<T> implements BaseDaoI<T> {
         }
     }
 
-    /*@Override
+    @Override
     public Serializable save(T o) {
         if (o != null) {
             return this.getCurrentSession().save(o);
         }
         return null;
     }
+    /*@Override
 
-    @Override
     public T get(String hql) {
         Query q = this.getCurrentSession().createQuery(hql);
         List<T> l = q.list();

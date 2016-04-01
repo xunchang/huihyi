@@ -17,13 +17,8 @@ public interface ResourceServiceI {
     public List<String> listAllResource();
     
     public ResourceView get(Long id);//根据id查询资源
-    /*
-
-    public void add(Resource resource);
-
-
-    public List<Tree> listAllTree(boolean flag);
-
-    */
-
+    
+    public void add(ResourceView resourceView);//添加资源
+    
+    public List<Tree> listAllTree(boolean flag);//获取菜单资源，true获取全部，false之获取菜单
 }
